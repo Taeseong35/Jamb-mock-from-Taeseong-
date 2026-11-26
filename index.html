@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAESEONG JAMB CBT MOCK</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif}
+header{background:#087c55;padding:20px;text-align:center}
+header h2{margin:0}
+.container{max-width:850px;margin:auto;padding:15px}
+.card{background:#1d293b;padding:18px;border-radius:12px;margin:12px 0}
+button{background:#087c55;color:white;border:0;padding:13px 18px;border-radius:8px;font-size:16px;cursor:pointer;margin:5px}
+button:disabled{opacity:.4}
+input[type=radio]{margin-right:10px}
+.option{display:block;background:#29374c;padding:13px;margin:10px 0;border-radius:8px;cursor:pointer}
+.option:has(input:checked){background:#087c55}
+#timer{font-size:25px;color:#ffcc55;font-weight:bold}
+#questionNav{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.nav{padding:9px 2px;background:#39465a}
+.nav.done{background:#087c55}
+.nav.current{outline:2px solid white}
+#exam,#result{display:none}
+small{color:#bdc9d8}
+</style>
+</head>
+<body>
+<header>
+<h2>TAESEONG'S JAMB CBT MOCK</h2>
+<p>2027 UTME PRACTICE EXAMINATION</p>
+</header>
+
+<div class="container">
+<div id="welcome" class="card">
+<h2>Welcome, Candidate!</h2>
+<p>Examination structure:</p>
+<ul>
+<li>Use of English — 60 questions</li>
+<li>Biology — 40 questions</li>
+<li>Chemistry — 40 questions</li>
+<li>Physics — 40 questions</li>
+</ul>
+<h3>Total: 180 Questions</h3>
+<h3>Time allowed: 60 minutes</h3>
+<p><small>Choose one answer per question. Your score and corrections will appear after submission.</small></p>
+<button onclick="startExam()">START EXAMINATION</button>
+</div>
+
+<div id="exam">
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<strong id="subject"></strong>
+<span id="timer">60:00</span>
+</div>
+<p id="progress"></p>
+<div style="height:7px;background:#39465a;border-radius:5px">
+<div id="bar" style="height:7px;background:#14b881;width:0%"></div>
+</div>
+</div>
+
+<div class="card">
+<h3 id="qnumber"></h3>
+<p id="question"></p>
+<div id="options"></div>
+</div>
+
+<div class="card">
+<button onclick="previous()">PREVIOUS</button>
+<button onclick="next()">NEXT</button>
+<button onclick="clearAnswer()">CLEAR ANSWER</button>
+</div>
+
+<div class="card">
+<h3>Question navigation</h3>
+<div id="questionNav"></div>
+</div>
+
+<button style="background:#c0392b;width:100%" onclick="submitExam()">SUBMIT EXAMINATION</button>
+</div>
+
+<div id="result" class="card">
+<h2>EXAMINATION RESULT</h2>
+<h1 id="score"></h1>
+<h2 id="percentage"></h2>
+<p id="correct"></p>
+<p id="wrong"></p>
+<p id="unanswered"></p>
+<h3>Answer Review</h3>
+<div id="review"></div>
+<button onclick="location.reload()">RETAKE EXAM</button>
+</div>
+</div>
+
+<script>
+const banks = {
+"Use of English":[
+["Choose the word nearest in meaning to 'abundant'.","Scarce","Plentiful","Limited","Rare",1],
+["Choose the opposite of 'hostile'.","Aggressive","Friendly","Violent","Unkind",1],
+["Neither the teacher nor the students _____ present.","was","is","were","has",2],
+["Identify the adverb: She spoke very quietly.","She","spoke","very","quietly",3],
+["Choose the correctly spelt word.","Accomodation","Accommodation","Acommodation","Acomodation",1],
+["The plural of criterion is _____.","criterions","criteria","criterias","criteriones",1],
+["Choose the correct expression.","He don't know","He doesn't knows","He doesn't know","He not know",2],
+["A person who writes poems is a _____.","Novelist","Poet","Playwright","Journalist",1],
+["Choose the opposite of 'transparent'.","Clear","Opaque","Bright","Visible",1],
+["Identify the conjunction: I stayed because it rained.","I","stayed","because","rained",2],
+["Choose the correct question tag: She is clever, ____?","is she","isn't she","does she","wasn't she",1],
+["The word 'benevolent' means _____.","Cruel","Kind","Angry","Selfish",1],
+["Choose the correct sentence.","The news are good","The news is good","The news were good","The news have good",1],
+["A group of lions is called a _____.","Herd","Pack","Pride","Flock",2],
+["Choose the word nearest in meaning to 'reluctant'.","Unwilling","Excited","Eager","Willing",0],
+["Choose the opposite of 'expand'.","Extend","Increase","Contract","Enlarge",2],
+["Identify the adjective: The tall boy arrived.","The","tall","boy","arrived",1],
+["She has lived here _____ 2020.","for","since","during","by",1],
+["Choose the correct spelling.","Privilege","Privelege","Priviledge","Privilage",0],
+["A speech made without preparation is _____.","Debate","Extempore","Lecture","Dialogue",1]
+],
+"Biology":[
+["The basic structural and functional unit of life is the _____.","Tissue","Cell","Organ","System",1],
+["Which organelle is responsible for aerobic respiration?","Ribosome","Nucleus","Mitochondrion","Golgi body",2],
+["The green pigment in plants is _____.","Haemoglobin","Chlorophyll","Melanin","Carotene",1],
+["Which blood cells transport oxygen?","White blood cells","Platelets","Red blood cells","Lymphocytes",2],
+["The functional unit of the kidney is the _____.","Neuron","Nephron","Alveolus","Villus",1],
+["Which process reduces chromosome number by half?","Mitosis","Meiosis","Budding","Binary fission",1],
+["The site of protein synthesis is the _____.","Ribosome","Lysosome","Vacuole","Centriole",0],
+["Which part of a flower produces pollen?","Stigma","Ovary","Anther","Style",2],
+["The movement of water through a selectively permeable membrane is _____.","Diffusion","Osmosis","Active transport","Translocation",1],
+["Which organism fixes atmospheric nitrogen?","Rhizobium","Plasmodium","Amoeba","Yeast",0],
+["The hormone that regulates blood glucose is _____.","Adrenaline","Insulin","Thyroxine","Oestrogen",1],
+["Which structure controls the activities of a cell?","Cell wall","Nucleus","Cytoplasm","Vacuole",1],
+["The first trophic level in a food chain is occupied by _____.","Consumers","Decomposers","Producers","Carnivores",2],
+["Which blood vessel carries blood away from the heart?","Vein","Artery","Capillary","Venule",1],
+["The loss of water vapour from leaves is called _____.","Respiration","Transpiration","Guttation","Photosynthesis",1],
+["Which organ produces bile?","Pancreas","Liver","Stomach","Kidney",1],
+["The male gamete in flowering plants is contained in the _____.","Ovule","Pollen grain","Stigma","Ovary",1],
+["Which part of the brain coordinates balance?","Cerebrum","Medulla","Cerebellum","Hypothalamus",2],
+["A relationship in which both organisms benefit is _____.","Parasitism","Mutualism","Predation","Competition",1],
+["Which component of blood helps in clotting?","Platelets","Plasma","Red cells","Lymph",0]
+],
+"Chemistry":[
+["The atomic number of an element equals the number of _____.","Neutrons","Protons","Nucleons","Shells",1],
+["The bond in sodium chloride is mainly _____.","Covalent","Metallic","Ionic","Hydrogen",2],
+["What is the pH of a neutral solution at 25°C?","0","5","7","14",2],
+["Which gas is produced when an acid reacts with a carbonate?","Oxygen","Hydrogen","Carbon dioxide","Nitrogen",2],
+["The empirical formula of C6H12O6 is _____.","C6H12O6","CH2O","C2H4O2","CHO",1],
+["Avogadro's constant is approximately _____.","6.02 × 10²³","3.00 × 10⁸","9.81","1.60 × 10⁻¹⁹",0],
+["Oxidation involves _____.","Gain of electrons","Loss of electrons","Gain of neutrons","Loss of protons",1],
+["Which element is a noble gas?","Chlorine","Neon","Sodium","Sulphur",1],
+["The functional group of alcohols is _____.","–COOH","–OH","–CHO","–NH2",1],
+["Which method separates crude oil into fractions?","Filtration","Crystallisation","Fractional distillation","Sublimation",2],
+["The oxidation number of oxygen in most compounds is _____.","+2","−2","+1","0",1],
+["Which gas turns limewater milky?","Hydrogen","Carbon dioxide","Oxygen","Ammonia",1],
+["The catalyst used in the Haber process is _____.","Nickel","Iron","Platinum","Copper",1],
+["Which substance is an alkali?","HCl","NaOH","H2SO4","CO2",1],
+["The shape of a methane molecule is _____.","Linear","Trigonal planar","Tetrahedral","Bent",2],
+["One mole of a substance contains _____.","6.02 × 10²³ entities","100 entities","1000 entities","3.14 entities",0],
+["Which is an unsaturated hydrocarbon?","Methane","Ethane","Ethene","Propane",2],
+["The main ore of aluminium is _____.","Haematite","Bauxite","Galena","Cassiterite",1],
+["Electrolysis of acidified water produces hydrogen and _____.","Nitrogen","Oxygen","Chlorine","Carbon dioxide",1],
+["Which particle has a negative charge?","Proton","Neutron","Electron","Alpha particle",2]
+],
+"Physics":[
+["The SI unit of force is the _____.","Joule","Newton","Watt","Pascal",1],
+["Which quantity is a scalar?","Velocity","Acceleration","Displacement","Mass",3],
+["The gradient of a distance-time graph represents _____.","Force","Speed","Power","Momentum",1],
+["The SI unit of power is _____.","Joule","Watt","Newton","Volt",1],
+["Which instrument measures electric current?","Voltmeter","Ammeter","Barometer","Thermometer",1],
+["The speed of light in a vacuum is approximately _____.","3 × 10⁶ m/s","3 × 10⁸ m/s","3 × 10¹⁰ m/s","300 m/s",1],
+["Heat transfer through a vacuum occurs by _____.","Conduction","Convection","Radiation","Diffusion",2],
+["The unit of electrical resistance is _____.","Ampere","Ohm","Volt","Coulomb",1],
+["A device that converts electrical energy into mechanical energy is a _____.","Generator","Motor","Transformer","Rectifier",1],
+["The image formed by a plane mirror is _____.","Real and inverted","Virtual and upright","Real and upright","Virtual and inverted",1],
+["The SI unit of frequency is _____.","Metre","Hertz","Second","Decibel",1],
+["Momentum is the product of mass and _____.","Force","Acceleration","Velocity","Energy",2],
+["Which lens is used to correct short-sightedness?","Convex","Concave","Cylindrical only","Plane",1],
+["The energy possessed by a moving body is _____.","Potential","Kinetic","Chemical","Nuclear",1],
+["A transformer works on the principle of _____.","Electrolysis","Electromagnetic induction","Conduction","Photoelectric effect",1],
+["The SI unit of pressure is _____.","Pascal","Newton","Joule","Watt",0],
+["Which wave requires a material medium?","Light","Radio","Sound","X-rays",2],
+["The acceleration due to gravity near Earth's surface is approximately _____.","4.9 m/s²","9.8 m/s²","15 m/s²","20 m/s²",1],
+["Ohm's law is expressed as _____.","V = IR","P = IV²","F = ma²","Q = It²",0],
+["The resistance of a wire increases when its ____ increases, all else constant.","Length","Cross-sectional area","Conductivity","Temperature decreases",0]
+]
+};
+
+let questions=[],answers={},current=0,time=3600,interval;
+
+function startExam(){
+ questions=[];
+ for(const [subject,bank] of Object.entries(banks)){
+   const count=subject==="Use of English"?60:40;
+   for(let i=0;i<count;i++){
+     const q=bank[i%bank.length];
+     questions.push({
+       subject,
+       text:q[0],
+       options:q.slice(1,5),
+       correct:q[5]
+     });
+   }
+ }
+ // Shuffle questions within the examination.
+ questions.sort(()=>Math.random()-.5);
+ document.getElementById("welcome").style.display="none";
+ document.getElementById("exam").style.display="block";
+ renderNav();
+ showQuestion();
+ interval=setInterval(()=>{
+   time--;
+   document.getElementById("timer").textContent=
+     String(Math.floor(time/60)).padStart(2,"0")+":"+
+     String(time%60).padStart(2,"0");
+   if(time<=0)submitExam();
+ },1000);
+}
+
+function showQuestion(){
+ const q=questions[current];
+ document.getElementById("subject").textContent=q.subject;
+ document.getElementById("qnumber").textContent="Question "+(current+1)+" of 180";
+ document.getElementById("question").textContent=q.text;
+ document.getElementById("progress").textContent=
+   "Answered: "+Object.keys(answers).length+" / 180";
+ document.getElementById("bar").style.width=((current+1)/180*100)+"%";
+ document.getElementById("options").innerHTML="";
+ q.options.forEach((option,i)=>{
+   const label=document.createElement("label");
+   label.className="option";
+   const radio=document.createElement("input");
+   radio.type="radio";
+   radio.name="answer";
+   radio.checked=answers[current]===i;
+   radio.addEventListener("change",()=>{
+     answers[current]=i;
+     renderNav();
+     showQuestion();
+   });
+   label.append(radio,document.createTextNode(
+     String.fromCharCode(65+i)+". "+option
+   ));
+   document.getElementById("options").appendChild(label);
+ });
+ document.querySelectorAll(".nav").forEach((b,i)=>{
+   b.classList.toggle("current",i===current);
+   b.classList.toggle("done",answers[i]!==undefined);
+ });
+}
+
+function renderNav(){
+ const nav=document.getElementById("questionNav");
+ nav.innerHTML="";
+ questions.forEach((q,i)=>{
+   const b=document.createElement("button");
+   b.className="nav";
+   b.textContent=i+1;
+   b.onclick=()=>{current=i;showQuestion()};
+   nav.appendChild(b);
+ });
+}
+
+function next(){if(current<179){current++;showQuestion()}}
+function previous(){if(current>0){current--;showQuestion()}}
+function clearAnswer(){delete answers[current];showQuestion();renderNav()}
+
+function submitExam(){
+ if(!confirm("Are you sure you want to submit your examination?"))return;
+ clearInterval(interval);
+ let score=0,review="";
+ questions.forEach((q,i)=>{
+   const chosen=answers[i];
+   const correct=chosen===q.correct;
+   if(correct)score++;
+   review+=`<div class="card">
+   <b>Question ${i+1} — ${q.subject}</b>
+   <p>${q.text}</p>
+   <p>Your answer: ${chosen===undefined?"Not answered":q.options[chosen]}</p>
+   <p>Correct answer: <b>${q.options[q.correct]}</b></p>
+   <p style="color:${correct?"#38d99c":"#ff7777"}">
+   ${correct?"CORRECT":"INCORRECT"}
+   </p></div>`;
+ });
+ const unanswered=180-Object.keys(answers).length;
+ document.getElementById("exam").style.display="none";
+ document.getElementById("result").style.display="block";
+ document.getElementById("score").textContent=score+" / 180";
+ document.getElementById("percentage").textContent=
+   "Percentage: "+(score/180*100).toFixed(2)+"%";
+ document.getElementById("correct").textContent="Correct: "+score;
+ document.getElementById("wrong").textContent=
+   "Incorrect: "+(180-score-unanswered);
+ document.getElementById("unanswered").textContent=
+   "Unanswered: "+unanswered;
+ document.getElementById("review").innerHTML=review;
+ window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
